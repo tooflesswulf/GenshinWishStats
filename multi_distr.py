@@ -1,10 +1,10 @@
 import numpy as np
-from typing import Callable, List, Union
+import scipy.special
+from typing import Callable
 from functools import cache
-from scipy.interpolate import interp1d
 
 from wish_distr import e_5s, e_4s, w_5s, w_4s
-from markov import markov_soln
+from markov import MarkovSolver, distr_hitter
 
 class MultiDistr:
     def __init__(self, base_distr: Callable[[int], float], n_max: int):
@@ -27,9 +27,11 @@ class MultiDistr:
         sigma = self.std * np.sqrt(n_iter)
         return np.exp(-0.5*(mu - w)**2 / sigma/sigma) / np.sqrt(2*np.pi) / sigma
 
-    def __call__(self, w: Union[List[int], int], n_iter: int, force_exact=False) -> float:
-        if isinstance(w, int):
-            return self._pwn(w, n_iter, force_exact)
+    def __call__(self, w, n_iter, force_exact=False) -> float:
+        if isinstance(w, (int, np.int64, np.int32)):
+            if isinstance(n_iter, (int, np.int64, np.int32)):
+                return self._pwn(w, n_iter, force_exact)
+            return np.array([self._pwn(w, ni, force_exact) for ni in n_iter])
         return np.array([self._pwn(wi, n_iter, force_exact) for wi in w])
 
 
@@ -39,8 +41,48 @@ class MultiDistr:
         if n == 1:
             return self.base(w)
 
-        iter_lim = max(self.n_max, w+1)
+        # iter_lim = max(self.n_max, w+1)
+        iter_lim = min(self.n_max, w+1)
         return sum([self.base(z) * self._cached_pwn(w-z, n-1) for z in range(iter_lim)])
+
+
+# Solution only works for reversible markov chains.
+class DupeTargMulti:
+    def __init__(self, mkv: MarkovSolver, multi: MultiDistr, x_inflim: int) -> None:
+        assert mkv.patho is None, 'DupeTargMulti works only for reversible markov chains.'
+        l2 = mkv.longterm_rate()
+        mu = multi.mean
+        s = multi.std
+        self.m2 = np.sqrt(mu*mu/s/s + 2*l2)/s - mu/s/s
+
+        self.hitter = distr_hitter(mkv, multi)
+        xr = np.arange(x_inflim, x_inflim+10)
+
+        inflim_check = self.hitter(xr) / np.exp(-self.m2*xr) / self.m2
+        assert np.std(inflim_check) <= 1e-10, 'x_inflim is too small.'
+        self.c = np.mean(inflim_check)
+        self.dt = 1 - self.c*self.m2 / (1-np.exp(-self.m2))
+
+        xr = np.arange(x_inflim)
+        # pt = (xr == 0).astype(int) * self.dt
+        self.delts = self.hitter(xr) - self.expconv(xr, 1)
+        derr_locs = np.cumsum(np.abs(self.delts[::-1])) > 1e-3
+        ix_rev = np.where(derr_locs)[0][0]
+        self.derr_len = len(self.delts) - ix_rev
+
+        def delt(x):
+            if x == 0:
+                return self.hitter(x) - self.expconv(x, 1) - self.dt
+            return self.hitter(x) - self.expconv(x, 1)
+        self.delt_multi = MultiDistr(delt, self.derr_len)
+    
+    def expconv(self, x, n):
+        zarg = -self.c * self.m2 / self.dt
+        hyp = scipy.special.hyp2f1(1-n, 1+x, 2, zarg)
+        nz = n * (self.dt**(n-1))
+        exp = self.c * self.m2 * np.exp(-self.m2*x)
+        return nz * exp * hyp
+
 
 
 if __name__ == '__main__':
@@ -56,9 +98,16 @@ if __name__ == '__main__':
 
     # oot = markov_soln([[3/5,4/5,0],[1/4,0,0],[3/20,1/5,1]])
     oot = markov_soln(e4s_mkv)
+    @cache
+    def e4s_hit(w):
+        return oot(range(w+1)) * oracle(w, range(w+1))
 
-    print(oot(range(10)))
-    print([oot(w) for w in range(10)])
+    print(oracle(15, range(25)))
+    plt.plot(oracle(15, range(25)))
+    plt.show()
+
+    # print(oot(range(10)))
+    # print([oot(w) for w in range(10)])
 
     # print(oot(232342343))
 
