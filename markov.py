@@ -3,7 +3,7 @@ from sys import path
 import numpy as np
 from typing import List
 
-import multi_distr
+# from multi_distr import MultiDistr
 
 # 5* pity (pathological case)
 def pathological_e5s_pity(n):
@@ -63,7 +63,7 @@ class MarkovSolver:
         eig_abs[eig_abs == 1] = 0
         return -np.log(self.eig[np.argmax(eig_abs)])
 
-def distr_hitter(mkv: MarkovSolver, multi: multi_distr.MultiDistr):
+def distr_hitter(mkv: MarkovSolver, multi):
     @cache
     def hit(w):
         return np.sum(mkv(range(w+1)) * multi(w, range(w+1)), dtype=np.float)
