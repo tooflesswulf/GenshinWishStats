@@ -10,23 +10,30 @@ Requires Python3.9 because `@functools.cache` decorator is vital to the code's r
 
 Details are in the Jupyter notebook [here](wish_plots.ipynb).
 
-Naming convention is (e5s-, e4s-, w5s-, w4s-) for event banner 4/5 star or weapon banner 4/5 star. I will call them `prefix`. 
+Naming convention is (e5s-, e4s-, w5s-, w4s-) for event banner 4/5 star or weapon banner 4/5 star. The example code below uses e4s.
 
 
 ```python
-prefix_pdf(w)  # P(X = w)
-prefix_multi = MultiDistr(prefix_pdf)  # Object for section 2.1.2
-prefix_multi(w, m)  # P(Xm = w)
-prefix_markov = [[...]]]  # Markov chain dynamics go here.
+from multi_distr import MultiDistr
+from markov import MarkovSolver, distr_hitter
+from wish_distr import e4s_pdf
+
+e4s_pdf(w)  # P(X = w)
+e4s_multi = MultiDistr(e4s_pdf)  # Object for section 2.1.2
+e4s_multi(w, m)  # P(Xm = w)
+e4s_markov = [[...]]]  # Markov chain dynamics go here.
+
+# Does not work for e5s, instead use MultiDistr(distr_hitter(MarkovSolver(e5s_markov), e5s_multi)).
+e4s_target_multi = DupeTargMulti(MarkovSolver(e4s_markov), e4s_multi, 500)  # Can take long time to initialize
+e4s_target_multi(w, m)  # P(hit m-th copy of target on w-th wish)
 ```
 
-
-Functions:
-- `{prf}_pdf(w)` gives P(X=w)
-- `{prf}_multi = MultiDistr({prf}_pdf(w))`
-- c
-
-
+## Notes
+### DupeTargMulti
+- Does not work with e5s. It is faster to solve exactly with `MultiDistr(distr_hitter(MarkovSolver(e5s_markov), e5s_multi))`
+- Needs some 'infinity' for which behavior is approximately exponential.
+- e4s and w4s: set to 500
+- w5s: set to 2000 (very slow)
 
 
 
