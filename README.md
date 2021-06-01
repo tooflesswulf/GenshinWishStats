@@ -35,5 +35,13 @@ e4s_target_multi(w, m)  # P(hit m-th copy of target on w-th wish)
 - e4s and w4s: set to 500
 - w5s: set to 2000 (very slow)
 
+### Verification of distributions
+You can verify these distributions with Monte Carlo simulation; I do not provide this code. You do need to use the distributions provided in [wish_distr.py](wish_distr.py) for the predictions to make sense though.
+
+Also, because this framework is fairly theoretical, you can substitute your own distributions (perhaps from other games) and everything should still work.
+
+
+
+
 
 
