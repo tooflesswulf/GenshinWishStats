@@ -56,7 +56,7 @@ class DupeTargMulti:
         chk_err = np.amax(inflim_check) - np.amin(inflim_check)
         assert chk_err <= 1e-10, f'x_inflim is too small. {chk_err}'
         self.c = np.mean(inflim_check)
-        print(self.c)
+        # print(self.c)
         self.dt = 1 - self.c*self.m2 / (1-np.exp(-self.m2))
 
         xr = np.arange(x_inflim)
