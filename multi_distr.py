@@ -4,7 +4,7 @@ from typing import Callable
 from functools import cache
 import util
 
-from wish_distr import e_5s, e_4s, w_5s, w_4s
+from wish_distr import e5s_pdf, e4s_pdf, w5s_pdf, w4s_pdf
 from markov import MarkovSolver, distr_hitter
 
 class MultiDistr:
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     e4s_mkv = [[1/3,2/3,0],[1/2,0,0],[1/6,1/3,1]]
     w4s_mkv = [[3/5,4/5,0],[1/4,0,0],[3/20,1/5,1]]
 
-    e4s_mult = MultiDistr(e_4s, 10)
+    e4s_mult = MultiDistr(e4s_pdf, 10)
 
     # testing multi distr
     x = np.arange(50)

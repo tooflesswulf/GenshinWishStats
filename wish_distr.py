@@ -3,7 +3,7 @@ from scipy.interpolate import interp1d
 from functools import cache
 
 @cache
-def e_5s(w: int):
+def e5s_pdf(w: int):
     def e5_phw(w):
         if 1 <= w <= 73:
             return .006
@@ -14,7 +14,7 @@ def e_5s(w: int):
     return np.prod([1-e5_phw(w2) for w2 in range(w)]) * e5_phw(w)
 
 @cache
-def e_4s(w: int):
+def e4s_pdf(w: int):
     def e4_phw(w):
         if 1 <= w <= 8:
             return .051
@@ -26,7 +26,7 @@ def e_4s(w: int):
     return np.prod([1-e4_phw(w2) for w2 in range(w)]) * e4_phw(w)
 
 @cache
-def w_5s(w):
+def w5s_pdf(w):
     # pts = [[0, .009], [1, .07978], [7,.49], [10, .55], [13, .24], [16, .1], [28, 1]]
     # x, y = np.array(pts).T
     # cinterp = interp1d(x+62, y, kind='cubic')
@@ -43,7 +43,7 @@ def w_5s(w):
 
 
 @cache
-def w_4s(w: int):
+def w4s_pdf(w: int):
     def w4_phw(w):
         if 1 <= w <= 7:
             return .06
