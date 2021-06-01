@@ -62,9 +62,9 @@ class DupeTargMulti:
         xr = np.arange(x_inflim)
         # pt = (xr == 0).astype(int) * self.dt
         self.delts = self.hitter(xr) - self.expconv(xr, 1)
-        derr_locs = np.cumsum(np.abs(self.delts[::-1])) > 1e-3
-        ix_rev = np.where(derr_locs)[0][0]
-        self.derr_len = len(self.delts) - ix_rev
+        derr_loc = np.argmax( np.cumsum(np.abs(self.delts[::-1])) > 1e-3 )
+        # ix_rev = np.where(derr_locs)[0][0]
+        self.derr_len = len(self.delts) - derr_loc
 
         self.delt_multi = MultiDistr(lambda x: self.hitter(x) - self.expconv(x, 1), self.derr_len)
     
@@ -76,10 +76,10 @@ class DupeTargMulti:
         exp = self.c * self.m2 * np.exp(-self.m2*x)
         ret = nz * exp * hyp
 
-        ret[x==0] -= self.dt**n
+        ret[x==0] += self.dt**n
         return ret
     
-    # convde should take scalar arguments
+    @util.vectorize(otypes=[np.float])
     @cache
     def convde(self, w, dn, en):
         if dn == 0:
@@ -90,6 +90,18 @@ class DupeTargMulti:
         z = np.arange(iterlim)
         return np.sum(self.delt_multi(z, dn) * self.expconv(w - z, en), dtype=np.float)
 
+    @util.vectorize(otypes=[np.float])
+    @cache
+    def solve_exact(self, x, n):
+        return np.sum([scipy.special.binom(n, i)*self.convde(x, i, n-i) for i in range(n+1)], axis=0)
+
+    def solve_approx(self, x, n):
+        return self.expconv(x, n) + n * self.convde(x, 1, n-1)
+
+    def __call__(self, w, n, force_exact=False):
+        if force_exact or n <= 5:
+            return self.solve_exact(w, n)
+        return self.solve_approx(w, n)
 
 
 if __name__ == '__main__':

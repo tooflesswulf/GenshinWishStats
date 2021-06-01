@@ -27,16 +27,20 @@ def e_4s(w: int):
 
 @cache
 def w_5s(w):
-    pts = [[0, .009], [1, .07978], [7,.49], [10, .55], [13, .24], [16, .1], [28, 1]]
-    x, y = np.array(pts).T
-    cinterp = interp1d(x+62, y, kind='cubic')
+    # pts = [[0, .009], [1, .07978], [7,.49], [10, .55], [13, .24], [16, .1], [28, 1]]
+    # x, y = np.array(pts).T
+    # cinterp = interp1d(x+62, y, kind='cubic')
     def w5_phw(w):
         if 1 <= w <= 62:
             return .009
-        elif 62 <= w <= 90:
-            return cinterp(w)
+        elif 62 <= w <= 76.5:
+            return .009 + (1 - .009) / (76.5 - 62) * (w - 62)
+        elif 76.5 < w:
+            return 1
         return 0
     return np.prod([1-w5_phw(w2) for w2 in range(w)]) * w5_phw(w)
+
+
 
 @cache
 def w_4s(w: int):
