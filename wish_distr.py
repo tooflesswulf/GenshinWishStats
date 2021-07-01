@@ -7,8 +7,8 @@ def e5s_pdf(w: int):
     def e5_phw(w):
         if 1 <= w <= 73:
             return .006
-        elif 73 <= w <= 90:
-            return .006 + (1-.006)/17 * (w-73)
+        elif 73 <= w <= 89:
+            return .006 + (1-.006)/(89 - 73) * (w-73)
         else:
             return 0
     return np.prod([1-e5_phw(w2) for w2 in range(w)]) * e5_phw(w)
@@ -32,10 +32,10 @@ def w5s_pdf(w):
     # cinterp = interp1d(x+62, y, kind='cubic')
     def w5_phw(w):
         if 1 <= w <= 62:
-            return .009
-        elif 62 <= w <= 76.5:
-            return .009 + (1 - .009) / (76.5 - 62) * (w - 62)
-        elif 76.5 < w:
+            return .007
+        elif 62 <= w <= 75:
+            return .007 + (1 - .007) / (75 - 62) * (w - 62)
+        elif 75 < w:
             return 1
         return 0
     return np.prod([1-w5_phw(w2) for w2 in range(w)]) * w5_phw(w)
@@ -48,7 +48,7 @@ def w4s_pdf(w: int):
         if 1 <= w <= 7:
             return .06
         elif 8 <= w <= 10:
-            return [2/3, .9895, 1][w-8]
+            return [2/3, 1, 1][w-8]
         return 0
     return np.prod([1-w4_phw(w2) for w2 in range(w)]) * w4_phw(w)
 
